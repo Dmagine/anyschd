@@ -18,6 +18,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [[ "$GOPROXYCN" = "TRUE" ]] ;
+then
+    echo "Warning: using goproxy.cn"
+    export GO111MODULE=on
+    export GOPROXY=https://goproxy.cn
+fi
+
 SCIPRT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 source "${SCIPRT_ROOT}/hack/lib/init.sh"
 
