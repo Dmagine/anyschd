@@ -35,6 +35,9 @@ RELEASE_CONTROLLER_IMAGE:=controller:$(RELEASE_VERSION)
 # v20200521-v0.18.800             - automated build for a tag
 VERSION=$(shell echo $(RELEASE_VERSION) | awk -F - '{print $$2}')
 
+# GOPROXYCN indicates using goproxy.cn (if TRUE) especially for update-vendor
+GOPROXYCN?=FALSE
+
 .PHONY: all
 all: build
 
@@ -73,8 +76,8 @@ build-scheduler.arm64v8: update-vendor
 
 .PHONY: local-image
 local-image: clean
-	docker build -f ./build/scheduler/Dockerfile --build-arg ARCH="amd64" --build-arg RELEASE_VERSION="$(RELEASE_VERSION)" -t $(LOCAL_REGISTRY)/$(LOCAL_IMAGE) .
-	docker build -f ./build/controller/Dockerfile --build-arg ARCH="amd64" -t $(LOCAL_REGISTRY)/$(LOCAL_CONTROLLER_IMAGE) .
+	docker build -f ./build/scheduler/Dockerfile --build-arg ARCH="amd64" --build-arg RELEASE_VERSION="$(RELEASE_VERSION)" --build-arg GOPROXYCN="$(GOPROXYCN)" -t $(LOCAL_REGISTRY)/$(LOCAL_IMAGE) .
+	docker build -f ./build/controller/Dockerfile --build-arg ARCH="amd64" --build-arg GOPROXYCN="$(GOPROXYCN)" -t $(LOCAL_REGISTRY)/$(LOCAL_CONTROLLER_IMAGE) .
 
 .PHONY: release-image.amd64
 release-image.amd64: clean
@@ -104,7 +107,7 @@ push-release-images: release-image.amd64 release-image.arm64v8
 
 .PHONY: update-vendor
 update-vendor:
-	hack/update-vendor.sh
+	GOPROXYCN=$(GOPROXYCN) hack/update-vendor.sh
 
 .PHONY: unit-test
 unit-test: update-vendor
